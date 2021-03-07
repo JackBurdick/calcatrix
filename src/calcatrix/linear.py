@@ -23,10 +23,10 @@ class LinearDevice:
         name="linear",
     ):
         self.name = name
-        self.stepper = Stepper(init_config["stepper"])
-        self.marker = Hall(**init_config["location"]["marker"])
-        self.bound_a = Hall(**init_config["location"]["bound_a"])
-        self.bound_b = Hall(**init_config["location"]["bound_b"])
+        self.stepper = Stepper(init_config["stepper"], name="step")
+        self.marker = Hall(**init_config["location"]["marker"], name="marker")
+        self.bound_a = Hall(**init_config["location"]["bound_a"], name="a")
+        self.bound_b = Hall(**init_config["location"]["bound_b"], name="b")
 
         self.cur_location = None
         self.dir_dict = {}
@@ -39,6 +39,7 @@ class LinearDevice:
 
     def set_home(self):
         # move one direction
+        print('moving True')
         o_t = self._move_to_bound(True)
         if o_t[0]:
             home_name = "a"
@@ -46,33 +47,45 @@ class LinearDevice:
             home_name = "b"
         self.dir_dict[home_name] = {"direction": True, "location": 0}
 
+        print('moving other')
         # move the other + and collect marker locations along the way
-        o_f = self._move_to_bound(False, collect_markers=True)
+        o_f = self._move_to_bound(False, collect_markers=True, prev_bound=home_name)
         if o_f[0]:
             end_name = "a"
         else:
             end_name = "b"
-        self.dir_dict[end_name] = {"direction": True, "location": o_f[3]}
+        self.dir_dict[end_name] = {"direction": True, "location": o_f[2]}
 
         # ensure each direction uses a different sensor
         if home_name == end_name:
             raise ValueError(f"bounds appear to share same sensor")
 
         # override max_steps
-        self.max_steps = o_f[3]
+        self.max_steps = o_f[2]
 
         # TODO: some logic with marker locations
         # 1) find connected components
         # 2) take average
         # 3) store averages + use them later
 
-    def _move_to_bound(self, direction, collect_markers=False):
+    def _move_to_bound(self, direction, collect_markers=False, prev_bound=None):
         cur_step = 0
+        self.stepper.enable_pin.off()
         try:
             while cur_step < self.max_steps:
                 if self.bound_a.value or self.bound_b.value:
-                    print(f"AT BOUND")
-                    break
+                    if prev_bound is not None:
+                        if prev_bound == "a":
+                            if self.bound_b.value:
+                                print(f"AT BOUND")
+                                break
+                        else:
+                            if self.bound_a.value:
+                                print(f"AT BOUND")
+                                break
+                    else:
+                        print(f"AT BOUND1")
+                        break
                 else:
                     if collect_markers:
                         if self.marker.value:

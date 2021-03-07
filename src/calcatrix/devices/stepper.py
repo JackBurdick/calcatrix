@@ -13,7 +13,7 @@ class Stepper:
     ):
         self.name = name
         self.dir_pin = DigitalOutputDevice(init_config["dir"])
-        self.step_pin = DigitalOutputDevice(init_config["_step"])
+        self.step_pin = DigitalOutputDevice(init_config["step"])
         self.enable_pin = DigitalOutputDevice(init_config["enable"])
         self.pulse_width = 0.0015
         self.time_between = 0.005
