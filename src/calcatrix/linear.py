@@ -32,14 +32,40 @@ class LinearDevice:
         self.dir_dict = {}
         self.max_steps = 500
 
+        self.sequence_tolerance = 10
+
+        # 'average' Location of the markers, is set on the set_home() sequence
+        self.positions = None
+
         # self.set_home()
 
     def at_location(self):
         return self.marker.value
 
+    def _find_seqs_with_tol(self, positions, tolerance=1):
+        # https://stackoverflow.com/questions/2361945/detecting-consecutive-integers-in-a-list
+        # drop duplicates (shouldn't be present) + ensure sort
+        positions = sorted(set(positions))
+        gaps = [[s, e] for s, e in zip(positions, positions[1:]) if s + tolerance < e]
+        edges = iter(positions[:1] + sum(gaps, []) + positions[-1:])
+        return list(zip(edges, edges))
+
+    def _obtain_average_from_seq(self, l, lt):
+        positions = {}
+        for i, inds in enumerate(lt):
+            # NOTE: will round down, e.g. 123.5 --> 123
+            avg = int((inds[0] + inds[1]) / 2)
+            positions[i] = avg
+        return positions
+
+    def _obtain_positions(self, l, tolerance=1):
+        lt = self._find_seqs_with_tol(l, 2)
+        pos = self._obtain_average_from_seq(l, lt)
+        return pos
+
     def set_home(self):
         # move one direction
-        print('moving True')
+        print("moving True")
         o_t = self._move_to_bound(True)
         if o_t[0]:
             home_name = "a"
@@ -47,7 +73,7 @@ class LinearDevice:
             home_name = "b"
         self.dir_dict[home_name] = {"direction": True, "location": 0}
 
-        print('moving other')
+        print("moving other")
         # move the other + and collect marker locations along the way
         o_f = self._move_to_bound(False, collect_markers=True, prev_bound=home_name)
         if o_f[0]:
@@ -63,6 +89,11 @@ class LinearDevice:
         # override max_steps
         self.max_steps = o_f[2]
 
+        if self.marker.activations:
+            self.positions = self._obtain_positions(
+                self.marker.activations, self.sequence_tolerance
+            )
+
         # TODO: some logic with marker locations
         # 1) find connected components
         # 2) take average
@@ -73,6 +104,7 @@ class LinearDevice:
         self.stepper.enable_pin.off()
         try:
             while cur_step < self.max_steps:
+                # TODO: this logic can likely be improved
                 if self.bound_a.value or self.bound_b.value:
                     if prev_bound is not None:
                         if prev_bound == "a":
