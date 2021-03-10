@@ -14,7 +14,7 @@ import datetime as dt
 
 
 class LinearDevice:
-    """stepper"""
+    """treader cart"""
 
     def __init__(
         self,
@@ -25,8 +25,8 @@ class LinearDevice:
         self.name = name
         self.stepper = Stepper(init_config["stepper"], name="step")
         self.marker = Hall(**init_config["location"]["marker"], name="marker")
-        self.bound_a = Hall(**init_config["location"]["bound_a"], name="a")
-        self.bound_b = Hall(**init_config["location"]["bound_b"], name="b")
+        self.bound_a = Limit(**init_config["location"]["bound_a"], name="a")
+        self.bound_b = Limit(**init_config["location"]["bound_b"], name="b")
 
         self.cur_location = None
         self.dir_dict = {}
@@ -94,10 +94,6 @@ class LinearDevice:
                 self.marker.activations, self.sequence_tolerance
             )
 
-        # TODO: some logic with marker locations
-        # 1) find connected components
-        # 2) take average
-        # 3) store averages + use them later
 
     def _move_to_bound(self, direction, collect_markers=False, prev_bound=None):
         cur_step = 0
