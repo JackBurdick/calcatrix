@@ -1,16 +1,16 @@
 from gpiozero import SmoothedInputDevice
 
 
-class Hall(SmoothedInputDevice):
+class Limit(SmoothedInputDevice):
     """
-    vibration
+    Limit switch -- normally open
     """
 
     def __init__(
         self,
-        name="hall_sensor",
+        name="limit_switch",,
         pin=None,
-        pull_up=True,
+        pull_up=False,
         active_state=None,
         queue_len=5,
         # sample_rate=100,
@@ -38,16 +38,10 @@ class Hall(SmoothedInputDevice):
                 f"name ({name}) expected to be type {str}, not {type(name)}"
             )
         self.name = name
-        self.activations = []
-        self.deactivations = []
 
     @property
     def value(self):
         return super(Hall, self).value
-
-    def rezero(self):
-        self.activations = []
-        self.deactivations = []
 
     def __repr__(self):
         return str(self.__class__.__name__) + ": " + f"{self.__dict__}"
