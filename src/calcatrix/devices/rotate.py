@@ -82,7 +82,7 @@ class Rotator(object):
 
     def _move_cw(self, big_steps):
         self.__clear()
-        for - in range(int(big_steps)):
+        for _ in range(int(big_steps)):
             GPIO.output(self.P3, 0)
             sleep(self._T)
             GPIO.output(self.P1, 1)
