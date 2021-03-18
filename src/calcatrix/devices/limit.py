@@ -8,7 +8,7 @@ class Limit(SmoothedInputDevice):
 
     def __init__(
         self,
-        name="limit_switch",,
+        name="limit_switch",
         pin=None,
         pull_up=False,
         active_state=None,
@@ -41,7 +41,7 @@ class Limit(SmoothedInputDevice):
 
     @property
     def value(self):
-        return super(Hall, self).value
+        return super(Limit, self).value
 
     def __repr__(self):
         return str(self.__class__.__name__) + ": " + f"{self.__dict__}"

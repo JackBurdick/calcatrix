@@ -1,16 +1,11 @@
-import sys
-import time
-
 from gpiozero import Device
-from calcatrix.devices.hall import Hall
-from calcatrix.devices.stepper import Stepper
-
-# from gpiozero.pins.mock import MockFactory
 from gpiozero.pins.native import NativeFactory
 
-Device.pin_factory = NativeFactory()
+from calcatrix.devices.hall import Hall
+from calcatrix.devices.limit import Limit
+from calcatrix.devices.stepper import Stepper
 
-import datetime as dt
+Device.pin_factory = NativeFactory()
 
 
 class LinearDevice:
@@ -84,7 +79,7 @@ class LinearDevice:
 
         # ensure each direction uses a different sensor
         if home_name == end_name:
-            raise ValueError(f"bounds appear to share same sensor")
+            raise ValueError("bounds appear to share same sensor")
 
         # override max_steps
         self.max_steps = o_f[2]
@@ -93,7 +88,6 @@ class LinearDevice:
             self.positions = self._obtain_positions(
                 self.marker.activations, self.sequence_tolerance
             )
-
 
     def _move_to_bound(self, direction, collect_markers=False, prev_bound=None):
         cur_step = 0
@@ -105,14 +99,14 @@ class LinearDevice:
                     if prev_bound is not None:
                         if prev_bound == "a":
                             if self.bound_b.value:
-                                print(f"AT BOUND")
+                                print("AT BOUND 2 (B)")
                                 break
                         else:
                             if self.bound_a.value:
-                                print(f"AT BOUND")
+                                print("AT BOUND 2 (A)")
                                 break
                     else:
-                        print(f"AT BOUND1")
+                        print("AT BOUND 1")
                         break
                 else:
                     if collect_markers:
@@ -121,7 +115,7 @@ class LinearDevice:
                     self.stepper.step_direction(direction)
                     cur_step += 1
             if cur_step == self.max_steps:
-                raise ValueError(f"Did not find bounds in max allowed step")
+                raise ValueError("Did not find bounds in max allowed step")
         finally:
             self.stepper.enable_pin.on()
 

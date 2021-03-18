@@ -1,4 +1,5 @@
 import time
+
 from gpiozero import Device, DigitalOutputDevice
 
 
