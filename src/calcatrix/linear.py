@@ -25,7 +25,10 @@ class LinearDevice:
 
         self.cur_location = None
         self.dir_dict = {}
+
+        # TODO: const by hardware
         self.max_steps = 500
+        self.backoff_steps = 40
 
         self.sequence_tolerance = 10
 
@@ -89,6 +92,12 @@ class LinearDevice:
                 self.marker.activations, self.sequence_tolerance
             )
 
+    def _backoff_bound(self, cur_direction):
+        opp_direction = not cur_direction
+        for i in range(self.backoff_steps):
+            self.stepper.step_direction(opp_direction)
+            # TODO: ensure backoff
+
     def _move_to_bound(self, direction, collect_markers=False, prev_bound=None):
         cur_step = 0
         self.stepper.enable_pin.off()
@@ -100,10 +109,12 @@ class LinearDevice:
                         if prev_bound == "a":
                             if self.bound_b.value:
                                 print("AT BOUND 2 (B)")
+                                self._backoff_bound(direction)
                                 break
                         else:
                             if self.bound_a.value:
                                 print("AT BOUND 2 (A)")
+                                self._backoff_bound(direction)
                                 break
                     else:
                         print("AT BOUND 1")
@@ -114,7 +125,7 @@ class LinearDevice:
                             self.marker.activations.append(cur_step)
                     self.stepper.step_direction(direction)
                     cur_step += 1
-            if cur_step == self.max_steps:
+            if cur_step >= self.max_steps:
                 raise ValueError("Did not find bounds in max allowed step")
         finally:
             self.stepper.enable_pin.on()
