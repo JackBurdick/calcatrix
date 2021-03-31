@@ -17,7 +17,7 @@ class Stepper:
         self.step_pin = DigitalOutputDevice(init_config["step"])
         self.enable_pin = DigitalOutputDevice(init_config["enable"])
         self.pulse_width = 0.0015
-        self.time_between = 0.005
+        self.time_between = 0.001
 
         # ensure stepper off
         self.enable_pin.on()
