@@ -27,11 +27,11 @@ class LinearDevice:
         self.dir_dict = {}
 
         # TODO: const by hardware
-        self.max_steps = 500
+        self.max_steps = 50000
         self.backoff_steps = 40
-        self.pulses_per_step = 10
+        self.pulses_per_step = 5
 
-        self.sequence_tolerance = 10
+        self.sequence_tolerance = 5
 
         # 'average' Location of the markers, is set on the set_home() sequence
         self.positions = None
@@ -58,7 +58,7 @@ class LinearDevice:
         return positions
 
     def _obtain_positions(self, l, tolerance=1):
-        lt = self._find_seqs_with_tol(l, 2)
+        lt = self._find_seqs_with_tol(l, tolerance)
         pos = self._obtain_average_from_seq(l, lt)
         return pos
 
@@ -67,9 +67,9 @@ class LinearDevice:
         print("moving True")
         o_t = self._move_to_bound(True)
         if o_t[0]:
-            home_name = "a"
-        else:
             home_name = "b"
+        else:
+            home_name = "a"
         self.dir_dict[home_name] = {"direction": True, "location": 0}
 
         print("moving other")
@@ -110,6 +110,7 @@ class LinearDevice:
                     # TODO: this logic can likely be improved
                     if self.bound_a.value or self.bound_b.value:
                         if prev_bound is not None:
+                            print(f'here: {prev_bound}')
                             if prev_bound == "a":
                                 if self.bound_b.value:
                                     print("AT BOUND 2 (B)")
