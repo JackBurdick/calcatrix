@@ -2,7 +2,7 @@ from calcatrix import LinearDevice
 
 DIR_PIN = 27
 STEP_PIN = 17
-LOC_PIN = 23
+LOC_PIN = 8
 ENABLE_PIN = 22
 BOUND_A_PIN = 24
 BOUND_B_PIN = 25
