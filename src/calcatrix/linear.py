@@ -1,16 +1,11 @@
-import sys
-import time
-
 from gpiozero import Device
-from calcatrix.devices.hall import Hall
-from calcatrix.devices.stepper import Stepper
-
-# from gpiozero.pins.mock import MockFactory
 from gpiozero.pins.native import NativeFactory
 
-Device.pin_factory = NativeFactory()
+from calcatrix.devices.hall import Hall
+from calcatrix.devices.limit import Limit
+from calcatrix.devices.stepper import Stepper
 
-import datetime as dt
+Device.pin_factory = NativeFactory()
 
 
 class LinearDevice:
@@ -30,9 +25,13 @@ class LinearDevice:
 
         self.cur_location = None
         self.dir_dict = {}
-        self.max_steps = 500
 
-        self.sequence_tolerance = 10
+        # TODO: const by hardware
+        self.max_steps = 50000
+        self.backoff_steps = 40
+        self.pulses_per_step = 5
+
+        self.sequence_tolerance = 5
 
         # 'average' Location of the markers, is set on the set_home() sequence
         self.positions = None
@@ -59,7 +58,7 @@ class LinearDevice:
         return positions
 
     def _obtain_positions(self, l, tolerance=1):
-        lt = self._find_seqs_with_tol(l, 2)
+        lt = self._find_seqs_with_tol(l, tolerance)
         pos = self._obtain_average_from_seq(l, lt)
         return pos
 
@@ -68,9 +67,9 @@ class LinearDevice:
         print("moving True")
         o_t = self._move_to_bound(True)
         if o_t[0]:
-            home_name = "a"
-        else:
             home_name = "b"
+        else:
+            home_name = "a"
         self.dir_dict[home_name] = {"direction": True, "location": 0}
 
         print("moving other")
@@ -84,7 +83,7 @@ class LinearDevice:
 
         # ensure each direction uses a different sensor
         if home_name == end_name:
-            raise ValueError(f"bounds appear to share same sensor")
+            raise ValueError("bounds appear to share same sensor")
 
         # override max_steps
         self.max_steps = o_f[2]
@@ -94,34 +93,45 @@ class LinearDevice:
                 self.marker.activations, self.sequence_tolerance
             )
 
+    def _backoff_bound(self, cur_direction):
+        opp_direction = not cur_direction
+        for _ in range(self.backoff_steps):
+            self.stepper.step_direction(opp_direction)
+            # TODO: ensure backoff
 
     def _move_to_bound(self, direction, collect_markers=False, prev_bound=None):
         cur_step = 0
         self.stepper.enable_pin.off()
         try:
             while cur_step < self.max_steps:
-                # TODO: this logic can likely be improved
-                if self.bound_a.value or self.bound_b.value:
-                    if prev_bound is not None:
-                        if prev_bound == "a":
-                            if self.bound_b.value:
-                                print(f"AT BOUND")
-                                break
+                self.stepper.step_direction(direction)
+                cur_step += 1
+                if cur_step % self.pulses_per_step == 0:
+                    # TODO: this logic can likely be improved
+                    if self.bound_a.value or self.bound_b.value:
+                        if prev_bound is not None:
+                            print(f'here: {prev_bound}')
+                            if prev_bound == "a":
+                                if self.bound_b.value:
+                                    print("AT BOUND 2 (B)")
+                                    self._backoff_bound(direction)
+                                    break
+                            else:
+                                if self.bound_a.value:
+                                    print("AT BOUND 2 (A)")
+                                    self._backoff_bound(direction)
+                                    break
                         else:
-                            if self.bound_a.value:
-                                print(f"AT BOUND")
-                                break
+                            print("AT BOUND 1")
+                            self._backoff_bound(direction)
+                            break
                     else:
-                        print(f"AT BOUND1")
-                        break
-                else:
-                    if collect_markers:
-                        if self.marker.value:
-                            self.marker.activations.append(cur_step)
-                    self.stepper.step_direction(direction)
-                    cur_step += 1
-            if cur_step == self.max_steps:
-                raise ValueError(f"Did not find bounds in max allowed step")
+                        if collect_markers:
+                            if self.marker.value:
+                                self.marker.activations.append(cur_step)
+                    
+            if cur_step >= self.max_steps:
+                raise ValueError("Did not find bounds in max allowed step")
         finally:
             self.stepper.enable_pin.on()
 
@@ -132,14 +142,13 @@ class LinearDevice:
         self.stepper.enable_pin.off()
         cur_step = 0
         try:
-            while cur_step < num_steps:
-                if self.at_location():
-                    print(f"stop - location: {cur_step}")
-                    break
-                else:
-                    self.stepper.step_direction(direction)
-                    print(f"{cur_step}/{num_steps} {direction}")
-                    cur_step += 1
+            while cur_step <= num_steps:
+                cur_step += 1
+                self.stepper.step_direction(direction)
+                if cur_step % self.pulses_per_step == 0:
+                    if self.at_location():
+                        print(f"stop - location: {cur_step}")
+                        break
         finally:
             self.stepper.enable_pin.on()
 
