@@ -67,9 +67,9 @@ class LinearDevice:
         print("moving True")
         o_t = self._move_to_bound(True)
         if o_t[0]:
-            home_name = "b"
-        else:
             home_name = "a"
+        else:
+            home_name = "b"
         self.dir_dict[home_name] = {"direction": True, "location": 0}
 
         print("moving other")
@@ -102,6 +102,7 @@ class LinearDevice:
     def _move_to_bound(self, direction, collect_markers=False, prev_bound=None):
         cur_step = 0
         self.stepper.enable_pin.off()
+        a_val, b_val = False, False
         try:
             while cur_step < self.max_steps:
                 self.stepper.step_direction(direction)
@@ -110,19 +111,21 @@ class LinearDevice:
                     # TODO: this logic can likely be improved
                     if self.bound_a.value or self.bound_b.value:
                         if prev_bound is not None:
-                            print(f'here: {prev_bound}')
                             if prev_bound == "a":
                                 if self.bound_b.value:
                                     print("AT BOUND 2 (B)")
+                                    a_val, b_val = self.bound_a.value, self.bound_b.value
                                     self._backoff_bound(direction)
                                     break
                             else:
                                 if self.bound_a.value:
+                                    a_val, b_val = self.bound_a.value, self.bound_b.value
                                     print("AT BOUND 2 (A)")
                                     self._backoff_bound(direction)
                                     break
                         else:
                             print("AT BOUND 1")
+                            a_val, b_val = self.bound_a.value, self.bound_b.value
                             self._backoff_bound(direction)
                             break
                     else:
@@ -135,7 +138,7 @@ class LinearDevice:
         finally:
             self.stepper.enable_pin.on()
 
-        return (self.bound_a.value, self.bound_b.value, cur_step)
+        return (a_val, b_val, cur_step)
 
     def move_direction(self, num_steps, direction):
         # turn stepper enable_pin off at start and on at end (opposite logic)

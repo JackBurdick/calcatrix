@@ -2,9 +2,9 @@ from calcatrix import LinearDevice
 
 DIR_PIN = 27
 STEP_PIN = 17
-LOC_PIN = 8
+LOC_PIN = 24
 ENABLE_PIN = 22
-BOUND_A_PIN = 24
+BOUND_A_PIN = 23
 BOUND_B_PIN = 25
 init_config = {
     "stepper": {"dir": DIR_PIN, "step": STEP_PIN, "enable": ENABLE_PIN},
