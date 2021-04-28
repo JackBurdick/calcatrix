@@ -39,9 +39,9 @@ class LinearDevice:
         self._pulley_teeth = 20
         self._timing_pitch_mm = 3
         self._steps_per_rev = 400
-        self._len_belt_mm = 6000
+        self._len_belt_mm = 60000
 
-        self.__len_per_rev = self._pully_teeth * self._timing_pitch_mm
+        self.__len_per_rev = self._pulley_teeth * self._timing_pitch_mm
         self.__mm_per_step = self.__len_per_rev / self._steps_per_rev
         self.__steps_per_belt = self._len_belt_mm / self.__mm_per_step
 
