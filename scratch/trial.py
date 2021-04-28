@@ -1,4 +1,4 @@
-from calcatrix import LinearDevice
+from calcatrix import LinearDevice  # pylint: disable=import-error
 
 DIR_PIN = 27
 STEP_PIN = 17

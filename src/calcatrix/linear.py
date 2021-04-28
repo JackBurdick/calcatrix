@@ -1,5 +1,5 @@
-from gpiozero import Device
-from gpiozero.pins.native import NativeFactory
+from gpiozero import Device  # pylint: disable=import-error
+from gpiozero.pins.native import NativeFactory  # pylint: disable=import-error
 
 from calcatrix.devices.hall import Hall
 from calcatrix.devices.limit import Limit
@@ -15,6 +15,7 @@ class LinearDevice:
         self,
         # init params
         init_config,
+        max_steps=None,
         name="linear",
     ):
         self.name = name
@@ -27,7 +28,6 @@ class LinearDevice:
         self.dir_dict = {}
 
         # TODO: const by hardware
-        self.max_steps = 50000
         self.backoff_steps = 40
         self.pulses_per_step = 5
 
@@ -36,7 +36,34 @@ class LinearDevice:
         # 'average' Location of the markers, is set on the set_home() sequence
         self.positions = None
 
-        # self.set_home()
+        self._pulley_teeth = 20
+        self._timing_pitch_mm = 3
+        self._steps_per_rev = 400
+        self._len_belt_mm = 6000
+
+        self.__len_per_rev = self._pully_teeth * self._timing_pitch_mm
+        self.__mm_per_step = self.__len_per_rev / self._steps_per_rev
+        self.__steps_per_belt = self._len_belt_mm / self.__mm_per_step
+
+        if not max_steps:
+            self.max_steps = self.__steps_per_belt
+        elif isinstance(max_steps, int):
+            if max_steps > self.__steps_per_belt:
+                raise ValueError(
+                    f"max_steps must be less than belt length ({self._len_belt_mm}) / "
+                    f"((num_teeth ({self._pulley_teeth}) * pitch (self._timing_pitch_mm))"
+                    f" / steps per rev ({self._steps_per_rev}))"
+                )
+            elif max_steps <= 0:
+                raise ValueError(
+                    f"please set `max_steps` to a positive value, not {max_steps}"
+                )
+            else:
+                self.max_steps = max_steps
+        else:
+            raise TypeError(
+                f"`max_steps` should be type {int}, not {type(max_steps)} ({max_steps})"
+            )
 
     def at_location(self):
         return self.marker.value
@@ -110,7 +137,7 @@ class LinearDevice:
                     # TODO: this logic can likely be improved
                     if self.bound_a.value or self.bound_b.value:
                         if prev_bound is not None:
-                            print(f'here: {prev_bound}')
+                            print(f"here: {prev_bound}")
                             if prev_bound == "a":
                                 if self.bound_b.value:
                                     print("AT BOUND 2 (B)")
@@ -129,7 +156,7 @@ class LinearDevice:
                         if collect_markers:
                             if self.marker.value:
                                 self.marker.activations.append(cur_step)
-                    
+
             if cur_step >= self.max_steps:
                 raise ValueError("Did not find bounds in max allowed step")
         finally:

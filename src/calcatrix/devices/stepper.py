@@ -1,6 +1,6 @@
 import time
 
-from gpiozero import Device, DigitalOutputDevice
+from gpiozero import Device, DigitalOutputDevice  # pylint: disable=import-error
 
 
 class Stepper:

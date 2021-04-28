@@ -1,6 +1,6 @@
 from time import sleep
-import RPi.GPIO as GPIO
-from calcatrix.devices.rotate import Rotator
+import RPi.GPIO as GPIO  # pylint: disable=import-error
+from calcatrix.devices.rotate import Rotator  # pylint: disable=import-error
 
 if __name__ == "__main__":
 
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     print(f"Pause in seconds: {m._T}")
     m.move_to(deg)
     sleep(1)
-    m.move_to(360-deg)
+    m.move_to(360 - deg)
     sleep(1)
     m.move_to(0)
     sleep(1)

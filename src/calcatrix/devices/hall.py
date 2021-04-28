@@ -1,4 +1,4 @@
-from gpiozero import SmoothedInputDevice
+from gpiozero import SmoothedInputDevice  # pylint: disable=import-error
 
 
 class Hall(SmoothedInputDevice):

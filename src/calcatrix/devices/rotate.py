@@ -1,6 +1,6 @@
 from time import sleep
 
-import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO  # pylint: disable=import-error
 
 
 class Rotator(object):
