@@ -106,7 +106,7 @@ class LinearDevice:
             end_name = "a"
         else:
             end_name = "b"
-        self.dir_dict[end_name] = {"direction": True, "location": o_f[2]}
+        self.dir_dict[end_name] = {"direction": False, "location": o_f[2]}
 
         # ensure each direction uses a different sensor
         if home_name == end_name:
@@ -141,12 +141,18 @@ class LinearDevice:
                             if prev_bound == "a":
                                 if self.bound_b.value:
                                     print("AT BOUND 2 (B)")
-                                    a_val, b_val = self.bound_a.value, self.bound_b.value
+                                    a_val, b_val = (
+                                        self.bound_a.value,
+                                        self.bound_b.value,
+                                    )
                                     self._backoff_bound(direction)
                                     break
                             else:
                                 if self.bound_a.value:
-                                    a_val, b_val = self.bound_a.value, self.bound_b.value
+                                    a_val, b_val = (
+                                        self.bound_a.value,
+                                        self.bound_b.value,
+                                    )
                                     print("AT BOUND 2 (A)")
                                     self._backoff_bound(direction)
                                     break
