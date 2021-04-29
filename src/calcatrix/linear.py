@@ -35,6 +35,7 @@ class LinearDevice:
 
         # 'average' Location of the markers, is set on the set_home() sequence
         self.positions = None
+        self._dir_increase = None
 
         self._pulley_teeth = 20
         self._timing_pitch_mm = 3
@@ -106,6 +107,7 @@ class LinearDevice:
             end_name = "a"
         else:
             end_name = "b"
+        self._dir_increase = False
         self.dir_dict[end_name] = {"direction": False, "location": o_f[2]}
 
         # ensure each direction uses a different sensor
@@ -176,17 +178,65 @@ class LinearDevice:
     def move_direction(self, num_steps, direction):
         # turn stepper enable_pin off at start and on at end (opposite logic)
         self.stepper.enable_pin.off()
+
+        if direction == self._dir_increase:
+            op = int.__add__
+        else:
+            op = int.__sub__
+
+        end_position = op(self.cur_location, num_steps)
+        if end_position > self.max_steps or end_position < 0:
+            raise ValueError(
+                f"move_direction({num_steps}, {direction}) from {self.cur_location}, "
+                f"will land at {end_position}, which is outside [0, {self.max_steps}]"
+            )
+
         cur_step = 0
         try:
             while cur_step <= num_steps:
                 cur_step += 1
                 self.stepper.step_direction(direction)
                 if cur_step % self.pulses_per_step == 0:
-                    if self.at_location():
-                        print(f"stop - location: {cur_step}")
-                        break
+                    if self.bound_a.value or self.bound_b.value:
+                        raise ValueError(
+                            f"Unexpected bound: or obstacle. cur:{self.cur_location}, [0,{self.max_steps}]"
+                        )
         finally:
             self.stepper.enable_pin.on()
+
+    def move_to_index(self, index, unsafe=False):
+        # turn stepper enable_pin off at start and on at end (opposite logic)
+        self.stepper.enable_pin.off()
+
+        try:
+            ind_position = self.positions[index]
+        except KeyError:
+            raise ValueError(
+                f"Desired index is not available. Please select from {self.positions.keys()}"
+            )
+
+        num_steps = self.cur_location - ind_position
+        if num_steps > 0:
+            dir_to_index = self._dir_increase
+        else:
+            dir_to_index = not self._dir_increase
+
+        if not dir_to_index:
+            raise ValueError(
+                f"Linear device has not been homed and does not know direction to index"
+            )
+
+        self.move_direction(num_steps, dir_to_index)
+
+        if not unsafe:
+            if not self.at_location():
+                raise ValueError(
+                    "Should be at a location, but not registering at a location"
+                    f"\n  cur_location: {self.cur_location}"
+                    f"\n  ind_position: {ind_position}"
+                    f"\n  bounds: [0,{self.max_steps}]"
+                    f"\n  at_location: {self.at_location()}"
+                )
 
     def __repr__(self):
         return str(self.__class__.__name__) + ": " + f"{self.__dict__}"
