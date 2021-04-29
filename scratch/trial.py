@@ -23,6 +23,16 @@ ld.set_home()
 
 print(ld)
 
+print("------" * 8)
+
+ind_keys = list(ld.positions.keys())
+print(ld.positions)
+
+print(f"cur location: {ld.cur_location}")
+
+ld.move_to_index(ind_keys[-1])
+print(f"cur location: {ld.cur_location}")
+
 # ld.move_direction(l_steps, True)
 # time.sleep(0.3)
 # ld.move_direction(r_steps, False)

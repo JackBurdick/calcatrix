@@ -107,7 +107,7 @@ class LinearDevice:
             end_name = "a"
         else:
             end_name = "b"
-        self._dir_increase = False
+        self._dir_increase = True
         self.dir_dict[end_name] = {"direction": False, "location": o_f[2]}
 
         # ensure each direction uses a different sensor
@@ -197,7 +197,7 @@ class LinearDevice:
 
         cur_step = 0
         try:
-            while cur_step <= num_steps:
+            while cur_step < num_steps:
                 cur_step += 1
                 self.stepper.step_direction(direction)
                 self.cur_location = op(self.cur_location, 1)
@@ -221,16 +221,17 @@ class LinearDevice:
             )
 
         num_steps = self.cur_location - ind_position
-        if num_steps > 0:
+        if ind_position > self.cur_location:
             dir_to_index = self._dir_increase
         else:
             dir_to_index = not self._dir_increase
 
-        if not dir_to_index:
+        if dir_to_index is None:
             raise ValueError(
                 f"Linear device has not been homed and does not know direction to index"
             )
 
+        num_steps = abs(num_steps)
         self.move_direction(num_steps, dir_to_index)
 
         if not unsafe:
