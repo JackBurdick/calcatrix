@@ -122,6 +122,8 @@ class LinearDevice:
                 self.marker.activations, self.sequence_tolerance
             )
 
+        self.cur_location = 0
+
     def _backoff_bound(self, cur_direction):
         opp_direction = not cur_direction
         for _ in range(self.backoff_steps):
@@ -173,6 +175,8 @@ class LinearDevice:
         finally:
             self.stepper.enable_pin.on()
 
+        self.cur_location = 0
+
         return (a_val, b_val, cur_step)
 
     def move_direction(self, num_steps, direction):
@@ -196,6 +200,7 @@ class LinearDevice:
             while cur_step <= num_steps:
                 cur_step += 1
                 self.stepper.step_direction(direction)
+                self.cur_location = op(self.cur_location, 1)
                 if cur_step % self.pulses_per_step == 0:
                     if self.bound_a.value or self.bound_b.value:
                         raise ValueError(
