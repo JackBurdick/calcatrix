@@ -31,6 +31,8 @@ class Rotator(object):
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, 0)
 
+        self.rpm = 5
+
     def _set_rpm(self, rpm):
         """Set the turn speed in RPM."""
         self._rpm = rpm
