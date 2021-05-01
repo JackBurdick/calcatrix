@@ -37,30 +37,50 @@ class MultiView:
         self.view_locations = self._init_locations()
         self.instructions = self._create_instructions()
 
+    def follow_instruction(self, instruction, func=None):
+        # move to specified location and angle
+        self.linear.move_to_location(instruction["location"])
+        self.rotate.move_to(instruction["rot_degree"])
+
+        # perform function if required
+        if func:
+            if callable(func):
+                func(instruction)
+            else:
+                raise TypeError(f"function {func} is not callable")
+
+    def follow_all_instructions(self, func=None):
+        if not self.instructions:
+            raise ValueError(f"No instructions present")
+        for instruction in self.instructions:
+            self.follow_instruction(instruction, func=func)
+
     def _set_angle_dist(self, dist, angle):
         return math.tan(angle * math.pi / 180) * dist
 
     def _create_instructions(self):
         """
-        each instruction will contain
-        (location, degree_to_rotate, location_name, index)
+        create sorted list of locations to stop + corresponding instructions to perform
 
-        e.g.
-            [
-                (70, -15, '-', 0),
-                (100, 0, '0', 0),
-                (130, 15, '+', 0),
-                ...
-            ]
+        Rather than jump from location to location, this creates a more efficient route
+        that does not require the linear device to "go back"
         """
         instructions = []
         # loop indexes
         for ind, specs in self.view_locations.items():
             # loop locations of each instance
             for name, tup in specs.items():
-                instruction = (tup[0], tup[1], name, ind)
+                instruction = {
+                    "location": tup[0],
+                    "rot_degree": tup[1],
+                    "name": name,
+                    "index": ind,
+                }
                 instructions.append(instruction)
-        return instructions
+
+        instructions_sorted = sorted(instructions, key=lambda k: k["location"])
+
+        return instructions_sorted
 
     def _init_locations(self):
         self.linear.set_home()
