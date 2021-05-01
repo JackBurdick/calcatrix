@@ -30,12 +30,39 @@ class MultiView:
         self._angle_a = angle / 2
         self._angle_b = 360 - self._angle_a
 
-        self.view_locations = self.init_locations()
+        self.view_locations = None
+        self.instructions = None
+
+    def initialize(self):
+        self.view_locations = self._init_locations()
+        self.instructions = self._create_instructions()
 
     def _set_angle_dist(self, dist, angle):
         return math.tan(angle * math.pi / 180) * dist
 
-    def init_locations(self):
+    def _create_instructions(self):
+        """
+        each instruction will contain
+        (location, degree_to_rotate, location_name, index)
+
+        e.g.
+            [
+                (70, -15, '-', 0),
+                (100, 0, '0', 0),
+                (130, 15, '+', 0),
+                ...
+            ]
+        """
+        instructions = []
+        # loop indexes
+        for ind, specs in self.view_locations.items():
+            # loop locations of each instance
+            for name, tup in specs.items():
+                instruction = (tup[0], tup[1], name, ind)
+                instructions.append(instruction)
+        return instructions
+
+    def _init_locations(self):
         self.linear.set_home()
 
         if not self.linear.positions:
@@ -45,9 +72,9 @@ class MultiView:
         for ind, iloc in self.linear.positions.items():
             # NOTE: unsure what the keys should be here
             loc_d = {
-                "a": (iloc - self._dist, self._angle_a),
+                "-": (iloc - self._dist, self._angle_a),
                 "0": (iloc, 0),
-                "b": (iloc + self._dist, self._angle_b),
+                "+": (iloc + self._dist, self._angle_b),
             }
             view_locs[ind] = loc_d
         return view_locs
