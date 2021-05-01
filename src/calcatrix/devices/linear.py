@@ -209,18 +209,12 @@ class LinearDevice:
         finally:
             self.stepper.enable_pin.on()
 
-    def move_to_index(self, index, unsafe=False):
-        # turn stepper enable_pin off at start and on at end (opposite logic)
-        self.stepper.enable_pin.off()
-
-        try:
-            ind_position = self.positions[index]
-        except KeyError:
+    def move_to_location(self, location, check_location=False):
+        if not self.cur_location:
             raise ValueError(
-                f"Desired index is not available. Please select from {self.positions.keys()}"
+                f"No current location `cur_location` - device must be homed first (or location set)"
             )
-
-        num_steps = self.cur_location - ind_position
+        num_steps = self.cur_location - location
         if ind_position > self.cur_location:
             dir_to_index = self._dir_increase
         else:
@@ -234,7 +228,7 @@ class LinearDevice:
         num_steps = abs(num_steps)
         self.move_direction(num_steps, dir_to_index)
 
-        if not unsafe:
+        if not check_location:
             if not self.at_location():
                 raise ValueError(
                     "Should be at a location, but not registering at a location"
@@ -243,6 +237,19 @@ class LinearDevice:
                     f"\n  bounds: [0,{self.max_steps}]"
                     f"\n  at_location: {self.at_location()}"
                 )
+
+    def move_to_index(self, index, check_location=False):
+        # turn stepper enable_pin off at start and on at end (opposite logic)
+        self.stepper.enable_pin.off()
+
+        try:
+            ind_position = self.positions[index]
+        except KeyError:
+            raise ValueError(
+                f"Desired index is not available. Please select from {self.positions.keys()}"
+            )
+
+        self.move_to_location(ind_position, check_location)
 
     def __repr__(self):
         return str(self.__class__.__name__) + ": " + f"{self.__dict__}"
