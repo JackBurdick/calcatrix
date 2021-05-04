@@ -37,7 +37,7 @@ class LinearDevice:
         self.positions = None
         self._dir_increase = None
 
-        self._pulley_teeth = 20
+        self._pulley_teeth = 60
         self._timing_pitch_mm = 3
         self._steps_per_rev = 400
         self._len_belt_mm = 60000
@@ -88,6 +88,7 @@ class LinearDevice:
     def _obtain_positions(self, l, tolerance=1):
         lt = self._find_seqs_with_tol(l, tolerance)
         pos = self._obtain_average_from_seq(l, lt)
+        # NOTE: convert to int
         return pos
 
     def set_home(self):
@@ -180,15 +181,22 @@ class LinearDevice:
         return (a_val, b_val, cur_step)
 
     def move_direction(self, num_steps, direction):
+        """
+        NOTE: the number of steps taken is converted (via round) to an int.
+        """
         # turn stepper enable_pin off at start and on at end (opposite logic)
         self.stepper.enable_pin.off()
+
+        num_steps = round(num_steps)
 
         if direction == self._dir_increase:
             op = int.__add__
         else:
             op = int.__sub__
 
-        end_position = op(self.cur_location, num_steps)
+        if self.cur_location is None:
+            raise ValueError(f"Current location is not found ({self.cur_location})")
+        end_position = int(op(self.cur_location, num_steps))
         if end_position > self.max_steps or end_position < 0:
             raise ValueError(
                 f"move_direction({num_steps}, {direction}) from {self.cur_location}, "
@@ -210,12 +218,12 @@ class LinearDevice:
             self.stepper.enable_pin.on()
 
     def move_to_location(self, location, check_location=False):
-        if not self.cur_location:
+        if self.cur_location is None:
             raise ValueError(
                 f"No current location `cur_location` - device must be homed first (or location set)"
             )
         num_steps = self.cur_location - location
-        if ind_position > self.cur_location:
+        if location > self.cur_location:
             dir_to_index = self._dir_increase
         else:
             dir_to_index = not self._dir_increase
@@ -233,7 +241,7 @@ class LinearDevice:
                 raise ValueError(
                     "Should be at a location, but not registering at a location"
                     f"\n  cur_location: {self.cur_location}"
-                    f"\n  ind_position: {ind_position}"
+                    f"\n  location: {location}"
                     f"\n  bounds: [0,{self.max_steps}]"
                     f"\n  at_location: {self.at_location()}"
                 )

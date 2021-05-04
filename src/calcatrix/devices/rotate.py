@@ -8,6 +8,7 @@ class Rotator(object):
         """Rotator, Half step
         inspired by http://blog.scphillips.com/
         """
+        GPIO.setmode(GPIO.BCM)
         # set pins
         if not isinstance(pins, list):
             raise TypeError(f"pins is expected to be type {list}, not {type(pins)}")
@@ -27,9 +28,9 @@ class Rotator(object):
         self.step_angle = 0  # Assume the way it is pointing is zero degrees
 
         # set pins
-        for pin in pins:
-            GPIO.setup(pin, GPIO.OUT)
-            GPIO.output(pin, 0)
+        #for pin in pins:
+        #    GPIO.setup(pin, GPIO.OUT)
+        #    GPIO.output(pin, 0)
 
         self.rpm = 5
 

@@ -24,10 +24,10 @@ class MultiView:
         self.rotate = Rotator(init_config["rotate"]["pins"])
 
         self.mm_to_object = 300
-        self.angle = 30
+        self.angle = 10
 
-        self._dist = self._set_angle_dist(30)
-        self._angle_a = angle / 2
+        self._dist = self._set_angle_dist(self.mm_to_object, self.angle)
+        self._angle_a = self.angle / 2
         self._angle_b = 360 - self._angle_a
 
         self.view_locations = None
@@ -56,7 +56,8 @@ class MultiView:
             self.follow_instruction(instruction, func=func)
 
     def _set_angle_dist(self, dist, angle):
-        return math.tan(angle * math.pi / 180) * dist
+        travel =  math.tan(angle * math.pi / 180) * dist
+        return travel
 
     def _create_instructions(self):
         """

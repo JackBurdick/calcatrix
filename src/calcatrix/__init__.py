@@ -20,4 +20,4 @@ else:
 
 
 # functionality
-from calcatrix.linear import LinearDevice
+from calcatrix.devices.multiview import MultiView
