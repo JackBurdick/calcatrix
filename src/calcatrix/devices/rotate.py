@@ -57,6 +57,9 @@ class Rotator(object):
             self._move_cw(steps // 8)
         self.step_angle = target_step_angle
 
+        # clear
+        self.__clear()
+
     def __clear(self):
         GPIO.output(self.P1, 0)
         GPIO.output(self.P2, 0)
