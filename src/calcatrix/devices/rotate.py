@@ -28,9 +28,9 @@ class Rotator(object):
         self.step_angle = 0  # Assume the way it is pointing is zero degrees
 
         # set pins
-        #for pin in pins:
-        #    GPIO.setup(pin, GPIO.OUT)
-        #    GPIO.output(pin, 0)
+        for pin in pins:
+            GPIO.setup(pin, GPIO.OUT)
+            GPIO.output(pin, 0)
 
         self.rpm = 5
 
