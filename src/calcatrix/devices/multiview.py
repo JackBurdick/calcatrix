@@ -37,7 +37,7 @@ class MultiView:
         self.view_locations = self._init_locations()
         self.instructions = self._create_instructions()
 
-    def follow_instruction(self, instruction, func=print):
+    def follow_instruction(self, instruction, func=None):
         # move to specified location and angle
         self.linear.move_to_location(instruction["location"])
         self.rotate.move_to(instruction["rot_degree"])
@@ -52,7 +52,7 @@ class MultiView:
         # return to zero state
         self.rotate.move_to(0)
 
-    def follow_all_instructions(self, func=None):
+    def follow_all_instructions(self, func=print):
         if not self.instructions:
             raise ValueError(f"No instructions present")
         for instruction in self.instructions:

@@ -53,7 +53,6 @@ class Rotator(object):
             steps -= self.steps_per_rev
             self._move_acw(-steps // 8)
         else:
-            print(f"moving {steps} steps")
             self._move_cw(steps // 8)
         self.step_angle = target_step_angle
 

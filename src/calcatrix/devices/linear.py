@@ -236,7 +236,7 @@ class LinearDevice:
         num_steps = abs(num_steps)
         self.move_direction(num_steps, dir_to_index)
 
-        if not check_location:
+        if check_location:
             if not self.at_location():
                 raise ValueError(
                     "Should be at a location, but not registering at a location"
