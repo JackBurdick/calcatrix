@@ -23,7 +23,7 @@ init_config = {
             # filepath is the location to store, init, if true will initialize the cart
             # from the saved filepath, if present
             # data = {"marker_positions": [], "current_position": 0}
-            "filepath": "home/pi/dev/saved_positions/trial_0.pickle",
+            "file_path": "/home/pi/dev/saved_positions/trial_0.pickle",
             "init_from_file": True,
         },
     },

@@ -88,6 +88,7 @@ class MultiView:
         return instructions_sorted
 
     def _init_locations(self):
+        self.linear.set_home()
 
         if not self.linear.positions:
             raise ValueError("No positions present")

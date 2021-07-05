@@ -69,6 +69,7 @@ class LinearDevice:
                 f"`max_steps` should be type {int}, not {type(max_steps)} ({max_steps})"
             )
 
+
         try:
             self.stored_loc_path = init_config["positions"]["file_path"]
         except KeyError:
@@ -88,7 +89,7 @@ class LinearDevice:
         return self.marker.value
 
     def _parse_saved_locations(self, fpath):
-        if not self.stored_loc_path:
+        if fpath is None:
             raise ValueError(f"no filepath has been specified")
 
         saved_data = Path(fpath)
@@ -155,12 +156,27 @@ class LinearDevice:
 
         self.cur_location = 0
 
+    def _save_meta(self):
+        
+        file_dict = {}
+        file_dict["positions"] = self.positions
+        file_dict["cur_location"] = self.cur_location
+        file_dict["_dir_increase"] = self._dir_increase
+        file_dict["max_steps"] = self.max_steps
+
+        # "home/pi/dev/saved_positions/trial_0.pickle"
+        storefile = Path(self.stored_loc_path)
+        storefile.parent.mkdir(parents=True, exist_ok=True)
+        storefile.touch(exist_ok=True)
+        with open(storefile, "wb") as fh:
+            pickle.dump(file_dict, fh, protocol=pickle.HIGHEST_PROTOCOL)
+
     def set_home(self, force=False):
         """
         set homing/marker information (from file, if specified). and store to file
         """
 
-        if self.existing_locs:
+        if self.file_data:
             # {"positions": [], "current_position": 0, "_dir_increase": Bool, max_steps, marker}
             try:
                 self.positions = self.file_data["positions"]
@@ -190,24 +206,13 @@ class LinearDevice:
             self._init_location_information()
             # TODO: save to file
             if self.stored_loc_path:
-                file_dict = {}
-                file_dict["positions"] = self.positions
-                file_dict["cur_location"] = self.cur_location
-                file_dict["_dir_increase"] = self._dir_increase
-                file_dict["max_steps"] = self.max_steps
-
-                # "home/pi/dev/saved_positions/trial_0.pickle"
-                storefile = Path(self.stored_loc_path)
-                storefile.touch(exist_ok=True)
-                with open(storefile, "wb") as fh:
-                    pickle.dump(file_dict, fh, protocol=pickle.HIGHEST_PROTOCOL)
-
+                self._save_meta()
         for x in [
             self.positions,
             self.cur_location,
             self._dir_increase,
             self.max_steps,
-        ]:
+            ]:
             if x is None:
                 raise ValueError(f"No {x} information has been set")
 
@@ -302,6 +307,7 @@ class LinearDevice:
                         )
         finally:
             self.stepper.enable_pin.on()
+            self._save_meta()
 
     def move_to_location(self, location, check_location=False):
         if self.cur_location is None:
