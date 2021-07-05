@@ -6,6 +6,7 @@ from calcatrix.devices.rotate import Rotator
 
 import math
 
+
 Device.pin_factory = NativeFactory()
 
 
@@ -48,7 +49,7 @@ class MultiView:
                 func(instruction)
             else:
                 raise TypeError(f"function {func} is not callable")
-        
+
         # return to zero state
         self.rotate.move_to(0)
 
@@ -59,7 +60,7 @@ class MultiView:
             self.follow_instruction(instruction, func=func)
 
     def _set_angle_dist(self, dist, angle):
-        travel =  math.tan(angle * math.pi / 180) * dist
+        travel = math.tan(angle * math.pi / 180) * dist
         return travel
 
     def _create_instructions(self):
@@ -87,7 +88,6 @@ class MultiView:
         return instructions_sorted
 
     def _init_locations(self):
-        self.linear.set_home()
 
         if not self.linear.positions:
             raise ValueError("No positions present")

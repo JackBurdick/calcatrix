@@ -1,3 +1,6 @@
+import pickle
+from pathlib import Path
+
 from gpiozero import Device  # pylint: disable=import-error
 from gpiozero.pins.native import NativeFactory  # pylint: disable=import-error
 
@@ -66,8 +69,35 @@ class LinearDevice:
                 f"`max_steps` should be type {int}, not {type(max_steps)} ({max_steps})"
             )
 
+        try:
+            self.stored_loc_path = init_config["positions"]["file_path"]
+        except KeyError:
+            self.stored_loc_path = None
+
+        try:
+            init_from_file = init_config["positions"]["init_from_file"]
+        except KeyError:
+            init_from_file = False
+
+        if init_from_file:
+            self.file_data = self._parse_saved_locations(self.stored_loc_path)
+        else:
+            self.file_data = None
+
     def at_location(self):
         return self.marker.value
+
+    def _parse_saved_locations(self, fpath):
+        if not self.stored_loc_path:
+            raise ValueError(f"no filepath has been specified")
+
+        saved_data = Path(fpath)
+        if saved_data.is_file():
+            with open(saved_data, "rb") as fp:
+                data = pickle.load(fp)
+        else:
+            data = None
+        return data
 
     def _find_seqs_with_tol(self, positions, tolerance=1):
         # https://stackoverflow.com/questions/2361945/detecting-consecutive-integers-in-a-list
@@ -91,7 +121,7 @@ class LinearDevice:
         # NOTE: convert to int
         return pos
 
-    def set_home(self):
+    def _init_location_information(self):
         # move one direction
         print("moving True")
         o_t = self._move_to_bound(True)
@@ -124,6 +154,62 @@ class LinearDevice:
             )
 
         self.cur_location = 0
+
+    def set_home(self, force=False):
+        """
+        set homing/marker information (from file, if specified). and store to file
+        """
+
+        if self.existing_locs:
+            # {"positions": [], "current_position": 0, "_dir_increase": Bool, max_steps, marker}
+            try:
+                self.positions = self.file_data["positions"]
+            except KeyError:
+                raise ValueError(
+                    f"no positions information present in stored {self.stored_loc_path}"
+                )
+            try:
+                self.cur_location = self.file_data["cur_location"]
+            except KeyError:
+                raise ValueError(
+                    f"no cur_location information present in stored {self.stored_loc_path}"
+                )
+            try:
+                self._dir_increase = self.file_data["_dir_increase"]
+            except KeyError:
+                raise ValueError(
+                    f"no _dir_increase information present in stored {self.stored_loc_path}"
+                )
+            try:
+                self.max_steps = self.file_data["max_steps"]
+            except KeyError:
+                raise ValueError(
+                    f"no max_steps information present in stored {self.stored_loc_path}"
+                )
+        else:
+            self._init_location_information()
+            # TODO: save to file
+            if self.stored_loc_path:
+                file_dict = {}
+                file_dict["positions"] = self.positions
+                file_dict["cur_location"] = self.cur_location
+                file_dict["_dir_increase"] = self._dir_increase
+                file_dict["max_steps"] = self.max_steps
+
+                # "home/pi/dev/saved_positions/trial_0.pickle"
+                storefile = Path(self.stored_loc_path)
+                storefile.touch(exist_ok=True)
+                with open(storefile, "wb") as fh:
+                    pickle.dump(file_dict, fh, protocol=pickle.HIGHEST_PROTOCOL)
+
+        for x in [
+            self.positions,
+            self.cur_location,
+            self._dir_increase,
+            self.max_steps,
+        ]:
+            if x is None:
+                raise ValueError(f"No {x} information has been set")
 
     def _backoff_bound(self, cur_direction):
         opp_direction = not cur_direction

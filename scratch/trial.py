@@ -19,6 +19,13 @@ init_config = {
             "bound_a": {"pin": BOUND_A_PIN},
             "bound_b": {"pin": BOUND_B_PIN},
         },
+        "positions": {
+            # filepath is the location to store, init, if true will initialize the cart
+            # from the saved filepath, if present
+            # data = {"marker_positions": [], "current_position": 0}
+            "filepath": "home/pi/dev/saved_positions/trial_0.pickle",
+            "init_from_file": True,
+        },
     },
 }
 
@@ -47,7 +54,6 @@ def take_photo(idict):
 
     # e.g. '01_01_2021__17_13_18'
     ts = datetime.now().strftime("%m_%d_%Y__%H_%M_%S")
-
     filename = IMG_PATH_TEMPLATE.format(loc, view, ts)
     filepath = f"/{BASEPATH}{filename}"
 
