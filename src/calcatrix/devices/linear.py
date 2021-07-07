@@ -69,7 +69,6 @@ class LinearDevice:
                 f"`max_steps` should be type {int}, not {type(max_steps)} ({max_steps})"
             )
 
-
         try:
             self.stored_loc_path = init_config["positions"]["file_path"]
         except KeyError:
@@ -157,7 +156,7 @@ class LinearDevice:
         self.cur_location = 0
 
     def _save_meta(self):
-        
+
         file_dict = {}
         file_dict["positions"] = self.positions
         file_dict["cur_location"] = self.cur_location
@@ -212,7 +211,7 @@ class LinearDevice:
             self.cur_location,
             self._dir_increase,
             self.max_steps,
-            ]:
+        ]:
             if x is None:
                 raise ValueError(f"No {x} information has been set")
 
