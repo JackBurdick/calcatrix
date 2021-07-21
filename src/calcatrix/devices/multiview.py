@@ -24,8 +24,18 @@ class MultiView:
         self.linear = LinearDevice(init_config["linear"])
         self.rotate = Rotator(init_config["rotate"]["pins"])
 
-        self.mm_to_object = 300
-        self.angle = 10
+        try:
+            mm_to_object = init_config["multiview"]["mm_to_object"]
+        except KeyError:
+            mm_to_object = 300
+
+        try:
+            angle = init_config["multiview"]["angle"]
+        except KeyError:
+            angle = 10
+
+        self.mm_to_object = mm_to_object
+        self.angle = angle
 
         self._dist = self._set_angle_dist(self.mm_to_object, self.angle)
         self._angle_a = self.angle / 2
