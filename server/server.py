@@ -83,7 +83,15 @@ def retrieve():
 def capture():
     # capture all specified images
     if request.method == "POST":
-        return f"/cart/images/capture"
+        if global_cart is None:
+            return "MultiView cart not initialized", 400
+        else:
+            try:
+                # TODO: allow for different functions?
+                global_cart.follow_all_instructions(func=take_photo)
+                return f"/cart/images/capture"
+            except Exception as e:
+                return f"Unable to follow all instruction: Exception: {e}", 400
 
 
 @app.route("/cart/images/capture_single", methods=["POST"])
