@@ -41,11 +41,11 @@ class MultiView:
         self._angle_a = self.angle / 2
         self._angle_b = 360 - self._angle_a
 
-        self.view_locations = None
+        self._view_locations = None
         self.instructions = None
 
     def initialize(self):
-        self.view_locations = self._init_locations()
+        self._view_locations = self._init_locations()
         self.instructions = self._create_instructions()
 
     def follow_instruction(self, instruction, func=None):
@@ -82,7 +82,7 @@ class MultiView:
         """
         instructions = []
         # loop indexes
-        for ind, specs in self.view_locations.items():
+        for ind, specs in self._view_locations.items():
             # loop locations of each instance
             for name, tup in specs.items():
                 instruction = {

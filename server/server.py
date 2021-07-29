@@ -1,6 +1,40 @@
 from flask import Flask, request
 
+from calcatrix.devices.multiview import MultiView  # pylint: disable=import-error
+from calcatrix.functions.photo import take_photo  # pylint: disable=import-error
+
+DIR_PIN = 27
+STEP_PIN = 17
+LOC_PIN = 26
+ENABLE_PIN = 22
+BOUND_A_PIN = 23
+BOUND_B_PIN = 25
+ROTATE_PINS = [21, 20, 16, 12]
+
+init_config = {
+    "rotate": {"pins": ROTATE_PINS},
+    "linear": {
+        "stepper": {"dir": DIR_PIN, "step": STEP_PIN, "enable": ENABLE_PIN},
+        "location": {
+            "marker": {"pin": LOC_PIN},
+            "bound_a": {"pin": BOUND_A_PIN},
+            "bound_b": {"pin": BOUND_B_PIN},
+        },
+        "positions": {
+            # filepath is the location to store, init, if true will initialize the cart
+            # from the saved filepath, if present
+            # data = {"marker_positions": [], "current_position": 0}
+            "file_path": "/home/pi/dev/saved_positions/trial_0.pickle",
+            "init_from_file": True,
+        },
+    },
+}
+
+
 app = Flask(__name__)
+
+
+global_cart = None
 
 
 @app.route("/")
@@ -22,11 +56,19 @@ def status():
 
 @app.route("/cart/initialize", methods=["POST"])
 def initialize():
+    global global_cart
     if request.method == "POST":
         # TODO: ensure reasonable
         mm_to_object = request.args.get("mm_to_object")
         angle = request.args.get("angle")
-        return f"mm_to_object: {mm_to_object}, angle: {angle}"
+        if mm_to_object:
+            init_config["multiview"]["mm_to_object"] = mm_to_object
+        if angle:
+            init_config["multiview"]["angle"] = angle
+        global_cart = MultiView(init_config=init_config)
+        global_cart.initialize()
+        # TODO: create a queue in the main server
+        return f"initialized: mm_to_object: {mm_to_object}, angle: {angle}"
 
 
 @app.route("/cart/images/retrieve", methods=["GET"])

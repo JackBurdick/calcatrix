@@ -1,8 +1,3 @@
-import time
-from datetime import datetime
-
-from picamera import PiCamera
-
 from calcatrix.devices.multiview import MultiView  # pylint: disable=import-error
 from calcatrix.functions.photo import take_photo  # pylint: disable=import-error
 
