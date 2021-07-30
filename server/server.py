@@ -61,14 +61,27 @@ def initialize():
         # TODO: ensure reasonable
         mm_to_object = request.args.get("mm_to_object")
         angle = request.args.get("angle")
+        force_init = request.args.get("force_init")
+        try:
+            _ = init_config["multiview"]
+        except KeyError:
+            init_config["multiview"] = {}
         if mm_to_object:
             init_config["multiview"]["mm_to_object"] = mm_to_object
         if angle:
             init_config["multiview"]["angle"] = angle
+
+        if global_cart is not None and global_cart.instructions is not None:
+            # cart+instructions have already been created at least once
+            if force_init is False:
+                return f"already initialized: {global_cart.instructions}", 200
+
         global_cart = MultiView(init_config=init_config)
         global_cart.initialize()
-        # TODO: create a queue in the main server
-        return f"initialized: mm_to_object: {mm_to_object}, angle: {angle}"
+        return (
+            f"initialized: mm_to_object: {mm_to_object}, angle: {angle}, force_init: {force_init}",
+            200,
+        )
 
 
 @app.route("/cart/images/retrieve", methods=["GET"])
@@ -87,9 +100,8 @@ def capture():
             return "MultiView cart not initialized", 400
         else:
             try:
-                # TODO: allow for different functions?
                 global_cart.follow_all_instructions(func=take_photo)
-                return f"/cart/images/capture"
+                return f"instuctions followed", 200
             except Exception as e:
                 return f"Unable to follow all instruction: Exception: {e}", 400
 
