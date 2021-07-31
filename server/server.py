@@ -1,7 +1,9 @@
+from pathlib import Path
+
 from flask import Flask, request
 
 from calcatrix.devices.multiview import MultiView  # pylint: disable=import-error
-from calcatrix.functions.photo import take_photo  # pylint: disable=import-error
+from calcatrix.functions.photo import Photo  # pylint: disable=import-error
 
 DIR_PIN = 27
 STEP_PIN = 17
@@ -35,6 +37,7 @@ app = Flask(__name__)
 
 
 global_cart = None
+BASE_PATH = "/home/pi/dev/imgs"
 
 
 @app.route("/")
@@ -108,6 +111,20 @@ def retrieve():
         return f"file_name: {file_name}"
 
 
+@app.route("/cart/images/retrieve", methods=["GET"])
+def list_files():
+    # retrieve specific image, ensure it exists
+    if request.method == "GET":
+        try:
+            files = (x for x in Path(BASE_PATH) if x.is_file())
+        except Exception as e:
+            return f"unable to list files from {BASE_PATH}. \n {e}", 400
+        rd = {}
+        rd["files"] = files
+        rd["num_files"] = len(files)
+        return rd, 200
+
+
 @app.route("/cart/images/capture", methods=["POST"])
 def capture():
     # capture all specified images
@@ -116,8 +133,9 @@ def capture():
             return "MultiView cart not initialized", 400
         else:
             try:
-                global_cart.follow_all_instructions(func=take_photo)
-                return f"instuctions followed", 200
+                photo_func = Photo(base_path=BASE_PATH)
+                global_cart.follow_all_instructions(func=photo_func)
+                return f"instructions followed", 200
             except Exception as e:
                 return f"Unable to follow all instruction: Exception: {e}", 400
 
@@ -134,4 +152,4 @@ def capture_single():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', threaded=False)
+    app.run(host="0.0.0.0", threaded=False)

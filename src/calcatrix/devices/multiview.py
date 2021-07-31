@@ -1,11 +1,10 @@
+import math
+
 from gpiozero import Device  # pylint: disable=import-error
 from gpiozero.pins.native import NativeFactory  # pylint: disable=import-error
 
 from calcatrix.devices.linear import LinearDevice
 from calcatrix.devices.rotate import Rotator
-
-import math
-
 
 Device.pin_factory = NativeFactory()
 
@@ -54,20 +53,25 @@ class MultiView:
         self.rotate.move_to(instruction["rot_degree"])
 
         # perform function if required
+        ret_value = None
         if func:
             if callable(func):
-                func(instruction)
+                ret_value = func(instruction)
             else:
                 raise TypeError(f"function {func} is not callable")
 
         # return to zero state
         self.rotate.move_to(0)
+        return ret_value
 
     def follow_all_instructions(self, func=print):
         if not self.instructions:
             raise ValueError(f"No instructions present")
+        return_values = []
         for instruction in self.instructions:
-            self.follow_instruction(instruction, func=func)
+            return_value = self.follow_instruction(instruction, func=func)
+            return_values.append(return_value)
+        return return_values
 
     def _set_angle_dist(self, dist, angle):
         travel = math.tan(angle * math.pi / 180) * dist
