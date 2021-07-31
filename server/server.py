@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from flask import Flask, request, send_file
+from flask import Flask, request, send_from_directory
 
 from calcatrix.devices.multiview import MultiView  # pylint: disable=import-error
 from calcatrix.functions.photo import Photo  # pylint: disable=import-error
@@ -118,7 +118,7 @@ def retrieve():
                 if not full_path.is_file():
                     return f"Requested file {file_name} is not a valid file", 400
                 else:
-                    return send_file(full_path), 200
+                    return send_from_directory(BASE_PATH, file_name), 200
 
 
 @app.route("/cart/images/list", methods=["GET"])
