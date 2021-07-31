@@ -67,21 +67,28 @@ def initialize():
         except KeyError:
             init_config["multiview"] = {}
         if mm_to_object:
-            init_config["multiview"]["mm_to_object"] = mm_to_object
+            init_config["multiview"]["mm_to_object"] = int(mm_to_object)
         if angle:
-            init_config["multiview"]["angle"] = angle
+            init_config["multiview"]["angle"] = int(angle)
 
-        if global_cart is not None and global_cart.instructions is not None:
-            # cart+instructions have already been created at least once
-            if force_init is False:
-                return f"already initialized: {global_cart.instructions}", 200
-
-        global_cart = MultiView(init_config=init_config)
-        global_cart.initialize()
-        return (
-            f"initialized: mm_to_object: {mm_to_object}, angle: {angle}, force_init: {force_init}",
-            200,
-        )
+        if global_cart is not None:
+            if global_cart.instructions is not None:
+                # cart+instructions have already been created at least once
+                if force_init == False:
+                    return f"already initialized: {global_cart.instructions}", 200
+                else:
+                    global_cart.initialize()
+                    return f"no existing instructions, re-initializing", 200
+            else:
+                global_cart.initialize()
+                return f"cart existed, but no instructions found, reinitializing", 200
+        else:
+            global_cart = MultiView(init_config=init_config)
+            global_cart.initialize()
+            return (
+                f"initialized: mm_to_object: {mm_to_object}, angle: {angle}, force_init: {force_init}",
+                200,
+            )
 
 
 @app.route("/cart/images/retrieve", methods=["GET"])
@@ -118,4 +125,4 @@ def capture_single():
 
 
 if __name__ == "__main__":
-    app.run(threaded=False)
+    app.run(host='0.0.0.0', threaded=False)
