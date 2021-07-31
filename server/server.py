@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from flask import Flask, request, send_from_directory
@@ -119,6 +120,25 @@ def retrieve():
                     return f"Requested file {file_name} is not a valid file", 400
                 else:
                     return send_from_directory(BASE_PATH, file_name), 200
+
+
+@app.route("/cart/images/remove", methods=["GET"])
+def remove_file():
+    # retrieve specific image, ensure it exists
+    if request.method == "GET":
+        file_name = request.args.get("file_name")
+        if not file_name:
+            return f"Please provide a file name", 400
+        else:
+            full_path = Path(BASE_PATH).joinpath(file_name)
+            if not full_path.exists():
+                return f"File ({file_name}) not found", 404
+            else:
+                if not full_path.is_file():
+                    return f"Requested file {file_name} is not a valid file", 400
+                else:
+                    os.remove(str(full_path))
+                    return f"file ({full_path}) removed", 200
 
 
 @app.route("/cart/images/list", methods=["GET"])
