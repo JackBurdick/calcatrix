@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from flask import Flask, request
+from flask import Flask, request, send_file
 
 from calcatrix.devices.multiview import MultiView  # pylint: disable=import-error
 from calcatrix.functions.photo import Photo  # pylint: disable=import-error
@@ -108,7 +108,17 @@ def retrieve():
     # retrieve specific image, ensure it exists
     if request.method == "GET":
         file_name = request.args.get("file_name")
-        return f"file_name: {file_name}"
+        if not file_name:
+            return f"Please provide a file name", 400
+        else:
+            full_path = Path(BASE_PATH).joinpath(file_name)
+            if not full_path.exists():
+                return f"File ({file_name}) not found", 404
+            else:
+                if not full_path.is_file():
+                    return f"Requested file {file_name} is not a valid file", 400
+                else:
+                    return send_file(full_path), 200
 
 
 @app.route("/cart/images/retrieve", methods=["GET"])
