@@ -51,7 +51,16 @@ def status():
         # - last request
         # - request completed?
         # - num images present
-        return "/cart/status"
+        sd = {}
+        if global_cart:
+            sd["mm_to_object"] = global_cart.mm_to_object
+            sd["angle"] = global_cart.angle
+            sd["max_steps"] = global_cart.linear.max_steps
+            sd["cur_location"] = global_cart.linear.cur_location
+            sd["_view_locations"] = global_cart._view_locations
+        else:
+            sd["cart"] = None
+        return sd, 200
 
 
 @app.route("/cart/initialize", methods=["POST"])
