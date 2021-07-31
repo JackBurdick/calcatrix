@@ -111,14 +111,15 @@ def retrieve():
         return f"file_name: {file_name}"
 
 
-@app.route("/cart/images/retrieve", methods=["GET"])
+@app.route("/cart/images/list", methods=["GET"])
 def list_files():
     # retrieve specific image, ensure it exists
     if request.method == "GET":
         try:
-            files = (x for x in Path(BASE_PATH) if x.is_file())
+            files = (str(x) for x in Path(BASE_PATH).iterdir() if x.is_file())
         except Exception as e:
             return f"unable to list files from {BASE_PATH}. \n {e}", 400
+        files = list(files)
         rd = {}
         rd["files"] = files
         rd["num_files"] = len(files)
