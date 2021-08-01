@@ -224,21 +224,40 @@ def capture_index():
 
 
 # TODO: allow for custom photos
-# @app.route("/cart/images/capture_step", methods=["POST"])
-# def capture_step():
-#     if request.method == "POST":
-#         # TODO: ensure existing
-#         step = request.args.get("step")
-#         angle = request.args.get("angle")
-#         if global_cart:
-#             instruction = {
-#                 "location": pos,
-#                 "rot_degree": tup[1],
-#                 "name": name,
-#                 "index": "A",
-#             }
+@app.route("/cart/images/capture_step", methods=["POST"])
+def capture_step():
+    if request.method == "POST":
+        # TODO: ensure existing
+        location = request.args.get("location")
+        if location is None:
+            return f"please specify a location", 400
 
-#         return f"index: {step}, position: {angle}"
+        rotation_degree = request.args.get("rotation_degree")
+        if rotation_degree is None:
+            return f"please specify a rotation_degree", 400
+
+        name = request.args.get("name")
+        if name is None:
+            return f"please specify a name", 400
+
+        index = request.args.get("index")
+        if index is None:
+            return f"please specify a index", 400
+
+        if global_cart:
+            instruction = global_cart._create_instruction(
+                location=location,
+                rotation_degree=rotation_degree,
+                name=name,
+                index=index,
+            )
+            ret_val = global_cart.follow_instruction(instruction, func=photo_func)
+            return f"instruction followed ({ret_val})", 200
+
+        return (
+            f"location: {location}, rotation_degree: {rotation_degree}, name: {name}, index: {index}",
+            200,
+        )
 
 
 if __name__ == "__main__":
