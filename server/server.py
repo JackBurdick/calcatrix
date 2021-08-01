@@ -193,7 +193,7 @@ def capture_index():
                     _ = loc[pos_name]
                     found = False
                     for instruction in global_cart.instructions:
-                        if str(instruction["index"]) == str(loc):
+                        if str(instruction["index"]) == str(index):
                             if str(instruction["name"]) == str(pos_name):
                                 found = True
                                 break
