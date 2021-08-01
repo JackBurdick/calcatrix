@@ -45,7 +45,7 @@ class MultiView:
 
     def initialize(self):
         self._view_locations = self._init_locations()
-        self.instructions = self._create_instructions()
+        self.instructions = self._create_instructions(self._view_locations)
 
     def follow_instruction(self, instruction, func=None):
         # move to specified location and angle
@@ -77,7 +77,16 @@ class MultiView:
         travel = math.tan(angle * math.pi / 180) * dist
         return travel
 
-    def _create_instructions(self):
+    def _create_instruction(self, location, rotation_degree, name, index):
+        instruction = {
+            "location": location,
+            "rot_degree": rotation_degree,
+            "name": name,
+            "index": index,
+        }
+        return instruction
+
+    def _create_instructions(self, view_locations):
         """
         create sorted list of locations to stop + corresponding instructions to perform
 
@@ -86,15 +95,12 @@ class MultiView:
         """
         instructions = []
         # loop indexes
-        for ind, specs in self._view_locations.items():
+        for ind, specs in view_locations.items():
             # loop locations of each instance
             for name, tup in specs.items():
-                instruction = {
-                    "location": tup[0],
-                    "rot_degree": tup[1],
-                    "name": name,
-                    "index": ind,
-                }
+                instruction = self._create_instruction(
+                    location=tup[0], rotation_degree=tup[1], name=name, index=ind
+                )
                 instructions.append(instruction)
 
         instructions_sorted = sorted(instructions, key=lambda k: k["location"])
