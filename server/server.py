@@ -192,6 +192,9 @@ def capture_index():
                 try:
                     _ = loc[pos_name]
                     found = False
+                    # NOTE: a more clever implementation could be worked here.
+                    # Technically, only the inner or outter loop is necessary, but this
+                    # the outter loop makes it easy to provide better error messages
                     for instruction in global_cart.instructions:
                         if str(instruction["index"]) == str(index):
                             if str(instruction["name"]) == str(pos_name):
@@ -220,6 +223,7 @@ def capture_index():
             )
 
 
+# TODO: allow for custom photos
 # @app.route("/cart/images/capture_step", methods=["POST"])
 # def capture_step():
 #     if request.method == "POST":
