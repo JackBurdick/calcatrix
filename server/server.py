@@ -94,14 +94,14 @@ def initialize():
                 if force_init == False:
                     return f"already initialized: {global_cart.instructions}", 200
                 else:
-                    global_cart.initialize()
+                    global_cart.initialize(force_init=force_init)
                     return f"no existing instructions, re-initializing", 200
             else:
                 global_cart.initialize()
                 return f"cart existed, but no instructions found, reinitializing", 200
         else:
             global_cart = MultiView(init_config=init_config)
-            global_cart.initialize()
+            global_cart.initialize(force_init=force_init)
             return (
                 f"initialized: mm_to_object: {mm_to_object}, angle: {angle}, force_init: {force_init}",
                 200,
@@ -252,18 +252,26 @@ def capture_step():
         location = request.args.get("location")
         if location is None:
             return f"please specify a location", 400
+        if not isinstance(location, int):
+            location = int(location)
 
         rotation_degree = request.args.get("rotation_degree")
         if rotation_degree is None:
             return f"please specify a rotation_degree", 400
+        if not isinstance(rotation_degree, int):
+            rotation_degree = int(rotation_degree)
 
         name = request.args.get("name")
         if name is None:
             return f"please specify a name", 400
+        if not isinstance(name, str):
+            name = str(name)
 
         index = request.args.get("index")
         if index is None:
             return f"please specify a index", 400
+        if not isinstance(index, int):
+            index = int(index)
 
         if global_cart:
             instruction = global_cart._create_instruction(

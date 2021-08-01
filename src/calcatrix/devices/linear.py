@@ -175,7 +175,7 @@ class LinearDevice:
         set homing/marker information (from file, if specified). and store to file
         """
 
-        if self.file_data:
+        if self.file_data and not force:
             # {"positions": [], "current_position": 0, "_dir_increase": Bool, max_steps, marker}
             try:
                 self.positions = self.file_data["positions"]
@@ -202,6 +202,8 @@ class LinearDevice:
                     f"no max_steps information present in stored {self.stored_loc_path}"
                 )
         else:
+            # overwrite max_steps to allow for full track travel (if necessary on reinit)
+            self.max_steps = self.__steps_per_belt
             self._init_location_information()
             # TODO: save to file
             if self.stored_loc_path:

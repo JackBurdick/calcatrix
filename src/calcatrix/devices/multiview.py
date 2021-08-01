@@ -43,8 +43,8 @@ class MultiView:
         self._view_locations = None
         self.instructions = None
 
-    def initialize(self):
-        self._view_locations = self._init_locations()
+    def initialize(self, force_init=False):
+        self._view_locations = self._init_locations(force_init)
         self.instructions = self._create_instructions(self._view_locations)
 
     def follow_instruction(self, instruction, func=None):
@@ -107,8 +107,8 @@ class MultiView:
 
         return instructions_sorted
 
-    def _init_locations(self):
-        self.linear.set_home()
+    def _init_locations(self, force_init):
+        self.linear.set_home(force=force_init)
 
         if not self.linear.positions:
             raise ValueError("No positions present")
