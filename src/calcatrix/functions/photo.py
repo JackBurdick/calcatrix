@@ -6,7 +6,7 @@ from picamera import PiCamera
 
 class Photo:
     def __init__(self, base_path="/home/pi/dev/imgs"):
-        self.img_template = "{}__{}__{}__{}.jpg"
+        self.img_template = "{}__{}__{}__{}__{}.jpg"
         self.base_path = base_path
 
     def __call__(self, instruction):
@@ -24,13 +24,18 @@ class Photo:
         rot_degree = int(rot_degree)
 
         try:
-            location = instruction["location"]
+            location = int(instruction["location"])
         except KeyError:
             location = 0
 
+        try:
+            name = instruction["name"]
+        except KeyError:
+            name = 0
+
         # e.g. '01_01_2021__17_13_18'
         ts = datetime.now().strftime("%m_%d_%Y__%H_%M_%S")
-        filename = self.img_template.format(index, location, rot_degree, ts)
+        filename = self.img_template.format(index, name, location, rot_degree, ts)
         filepath = f"{self.base_path}/{filename}"
 
         # capture image
