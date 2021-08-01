@@ -39,6 +39,7 @@ app = Flask(__name__)
 
 global_cart = None
 BASE_PATH = "/home/pi/dev/imgs"
+photo_func = Photo(base_path=BASE_PATH)
 
 
 @app.route("/cart/status", methods=["GET"])
@@ -160,7 +161,6 @@ def capture():
             return "MultiView cart not initialized", 400
         else:
             try:
-                photo_func = Photo(base_path=BASE_PATH)
                 global_cart.follow_all_instructions(func=photo_func)
                 return f"instructions followed", 200
             except Exception as e:
@@ -174,11 +174,10 @@ def capture_index():
         index = request.args.get("index")
         if not index:
             return f"Please specify an index", 400
-        position = request.args.get("position")
-        if not position:
-            position = 0
-
-        # name
+        pos_name = request.args.get("position_name")
+        if not pos_name:
+            # default to straight on image
+            pos_name = "0"
 
         # capture if specified exists
         if global_cart:
@@ -186,10 +185,27 @@ def capture_index():
             try:
                 loc = cur_locations["index"]
                 try:
-                    pos = loc[str(position)]
-                    # CAPTURE IMAGE
+                    _ = loc[pos_name]
+                    found = False
+                    for instruction in global_cart.instructions:
+                        if instruction["index"] == loc:
+                            if instruction["name"] == pos_name:
+                                found = True
+                                break
+                    if found:
+                        # CAPTURE IMAGE
+                        ret_val = global_cart.follow_instruction(
+                            instruction, func=photo_func
+                        )
+                        return f"instruction followed ({ret_val})", 200
+                    else:
+                        return (
+                            f"index ({index}) and position_name ({pos_name}) not found"
+                            f"\n {global_cart.instructions}",
+                            400,
+                        )
                 except KeyError:
-                    return f"position ({position}), not in index ({loc})", 400
+                    return f"position ({pos_name}), not in index ({loc})", 400
             except KeyError:
                 return f"index ({index}), not in {cur_locations.keys()}", 400
         else:
@@ -197,7 +213,6 @@ def capture_index():
                 "cart not initialized, please initialize (/cart/initialize, POST)",
                 400,
             )
-        return f"index: {index}, position: {position}"
 
 
 # @app.route("/cart/images/capture_step", methods=["POST"])
