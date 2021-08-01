@@ -1,7 +1,7 @@
 import time
 from datetime import datetime
 
-from picamera import PiCamera
+from picamera import PiCamera  # pylint: disable=import-error
 
 
 class Photo:

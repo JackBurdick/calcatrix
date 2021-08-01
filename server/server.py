@@ -44,6 +44,9 @@ photo_func = Photo(base_path=BASE_PATH)
 
 @app.route("/cart/status", methods=["GET"])
 def status():
+    """
+    Return basic cart information
+    """
     if request.method == "GET":
         # return information
         # - current indexes
@@ -66,6 +69,10 @@ def status():
 
 @app.route("/cart/initialize", methods=["POST"])
 def initialize():
+    """
+    Initialize the cart, the cart is stored in `global_cart` as a global
+    variable
+    """
     global global_cart
     if request.method == "POST":
         # TODO: ensure reasonable
@@ -103,7 +110,9 @@ def initialize():
 
 @app.route("/cart/images/retrieve", methods=["GET"])
 def retrieve():
-    # retrieve specific image, ensure it exists
+    """
+    Retrieve an already captured image, if it exists
+    """
     if request.method == "GET":
         file_name = request.args.get("file_name")
         if not file_name:
@@ -121,7 +130,9 @@ def retrieve():
 
 @app.route("/cart/images/remove", methods=["GET"])
 def remove_file():
-    # retrieve specific image, ensure it exists
+    """
+    Remove an already captured image, if it exists
+    """
     if request.method == "GET":
         file_name = request.args.get("file_name")
         if not file_name:
@@ -140,7 +151,9 @@ def remove_file():
 
 @app.route("/cart/images/list", methods=["GET"])
 def list_files():
-    # retrieve specific image, ensure it exists
+    """
+    List all the images currently present
+    """
     if request.method == "GET":
         try:
             files = (str(x) for x in Path(BASE_PATH).iterdir() if x.is_file())
@@ -155,7 +168,9 @@ def list_files():
 
 @app.route("/cart/images/capture", methods=["POST"])
 def capture():
-    # capture all specified images
+    """
+    Follow all pre-initialized cart instructions
+    """
     if request.method == "POST":
         if global_cart is None:
             return "MultiView cart not initialized", 400
@@ -169,6 +184,9 @@ def capture():
 
 @app.route("/cart/images/capture_index", methods=["POST"])
 def capture_index():
+    """
+    Capture image at the specified index
+    """
     if request.method == "POST":
         # args
         index = request.args.get("index")
@@ -226,6 +244,9 @@ def capture_index():
 # TODO: allow for custom photos
 @app.route("/cart/images/capture_step", methods=["POST"])
 def capture_step():
+    """
+    Capture image at the specified step/rotation
+    """
     if request.method == "POST":
         # TODO: ensure existing
         location = request.args.get("location")
@@ -261,4 +282,6 @@ def capture_step():
 
 
 if __name__ == "__main__":
+    # threded=False --> allow only one instruction at a time. This could be
+    # modifed by using a queue, but for now, having only a single thread is sufficient
     app.run(host="0.0.0.0", threaded=False)
