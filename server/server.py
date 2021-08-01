@@ -178,7 +178,7 @@ def capture_index():
             index = int(index)
 
         pos_name = request.args.get("position_name")
-        if isinstance(pos_name, int):
+        if not isinstance(pos_name, str):
             pos_name = str(pos_name)
         if not pos_name:
             # default to straight on image
@@ -193,8 +193,8 @@ def capture_index():
                     _ = loc[pos_name]
                     found = False
                     for instruction in global_cart.instructions:
-                        if instruction["index"] == loc:
-                            if instruction["name"] == pos_name:
+                        if str(instruction["index"]) == str(loc):
+                            if str(instruction["name"]) == str(pos_name):
                                 found = True
                                 break
                     if found:
@@ -211,6 +211,8 @@ def capture_index():
                         )
                 except KeyError:
                     return f"position ({pos_name}), not in index ({loc})", 400
+            except KeyError:
+                return f"index ({index}), not in {cur_locations.keys()}", 400
         else:
             return (
                 "cart not initialized, please initialize (/cart/initialize, POST)",
