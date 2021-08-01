@@ -41,11 +41,6 @@ global_cart = None
 BASE_PATH = "/home/pi/dev/imgs"
 
 
-@app.route("/")
-def ok():
-    return "ok"
-
-
 @app.route("/cart/status", methods=["GET"])
 def status():
     if request.method == "GET":
@@ -62,6 +57,7 @@ def status():
             sd["max_steps"] = global_cart.linear.max_steps
             sd["cur_location"] = global_cart.linear.cur_location
             sd["_view_locations"] = global_cart._view_locations
+            sd["instructions"] = global_cart.instructions
         else:
             sd["cart"] = None
         return sd, 200
@@ -171,15 +167,54 @@ def capture():
                 return f"Unable to follow all instruction: Exception: {e}", 400
 
 
-@app.route("/cart/images/capture_single", methods=["POST"])
-def capture_single():
+@app.route("/cart/images/capture_index", methods=["POST"])
+def capture_index():
     if request.method == "POST":
-        # TODO: ensure existing
+        # args
         index = request.args.get("index")
+        if not index:
+            return f"Please specify an index", 400
         position = request.args.get("position")
-        # TODO: ensure either index or position is set, not both
-        angle = request.args.get("angle")
-        return f"index: {index}, position: {position}, angle: {angle}"
+        if not position:
+            position = 0
+
+        # name
+
+        # capture if specified exists
+        if global_cart:
+            cur_locations = global_cart._view_locations
+            try:
+                loc = cur_locations["index"]
+                try:
+                    pos = loc[str(position)]
+                    # CAPTURE IMAGE
+                except KeyError:
+                    return f"position ({position}), not in index ({loc})", 400
+            except KeyError:
+                return f"index ({index}), not in {cur_locations.keys()}", 400
+        else:
+            return (
+                "cart not initialized, please initialize (/cart/initialize, POST)",
+                400,
+            )
+        return f"index: {index}, position: {position}"
+
+
+# @app.route("/cart/images/capture_step", methods=["POST"])
+# def capture_step():
+#     if request.method == "POST":
+#         # TODO: ensure existing
+#         step = request.args.get("step")
+#         angle = request.args.get("angle")
+#         if global_cart:
+#             instruction = {
+#                 "location": pos,
+#                 "rot_degree": tup[1],
+#                 "name": name,
+#                 "index": "A",
+#             }
+
+#         return f"index: {step}, position: {angle}"
 
 
 if __name__ == "__main__":
