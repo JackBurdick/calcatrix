@@ -174,8 +174,8 @@ def capture_index():
         index = request.args.get("index")
         if not index:
             return f"Please specify an index", 400
-        if isinstance(index, int):
-            index = str(index)
+        if isinstance(index, str):
+            index = int(index)
 
         pos_name = request.args.get("position_name")
         if isinstance(pos_name, int):
@@ -211,8 +211,6 @@ def capture_index():
                         )
                 except KeyError:
                     return f"position ({pos_name}), not in index ({loc})", 400
-            except KeyError:
-                return f"index ({index}), not in {cur_locations.keys()}", 400
         else:
             return (
                 "cart not initialized, please initialize (/cart/initialize, POST)",
