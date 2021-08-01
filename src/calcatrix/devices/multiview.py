@@ -111,9 +111,9 @@ class MultiView:
         for ind, iloc in self.linear.positions.items():
             # NOTE: unsure what the keys should be here
             loc_d = {
-                "-": (iloc - self._dist, self._angle_a),
+                "a": (iloc - self._dist, self._angle_a),
                 "0": (iloc, 0),
-                "+": (iloc + self._dist, self._angle_b),
+                "b": (iloc + self._dist, self._angle_b),
             }
             view_locs[ind] = loc_d
         return view_locs
