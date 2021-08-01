@@ -174,7 +174,12 @@ def capture_index():
         index = request.args.get("index")
         if not index:
             return f"Please specify an index", 400
+        if isinstance(index, int):
+            index = str(index)
+
         pos_name = request.args.get("position_name")
+        if isinstance(pos_name, int):
+            pos_name = str(pos_name)
         if not pos_name:
             # default to straight on image
             pos_name = "0"
@@ -183,7 +188,7 @@ def capture_index():
         if global_cart:
             cur_locations = global_cart._view_locations
             try:
-                loc = cur_locations["index"]
+                loc = cur_locations[index]
                 try:
                     _ = loc[pos_name]
                     found = False
