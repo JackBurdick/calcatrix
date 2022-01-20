@@ -6,15 +6,15 @@ import os.path
 # https://stackoverflow.com/questions/17583443/what-is-the-correct-way-to-share-package-version-with-setup-py-and-the-package
 # I'm not 100% sure this is the best way to do this yet
 try:
-    _dist = get_distribution("crummycm")
+    _dist = get_distribution("calcatrix")
     # Normalize case for Windows systems
     dist_loc = os.path.normcase(_dist.location)
     here = os.path.normcase(__file__)
-    if not here.startswith(os.path.join(dist_loc, "crummycm")):
+    if not here.startswith(os.path.join(dist_loc, "calcatrix")):
         # not installed, but there is another version that *is*
         raise DistributionNotFound
 except DistributionNotFound:
-    __version__ = "Please install this project with setup.py (e.g.`pip install ./crummycm/` or `pip install -e ./crummycm/`)"
+    __version__ = "Please install this project with setup.py (e.g.`pip install ./calcatrix/` or `pip install -e ./calcatrix/`)"
 else:
     __version__ = _dist.version
 
