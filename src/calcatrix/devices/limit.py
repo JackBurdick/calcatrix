@@ -4,6 +4,9 @@ from gpiozero import SmoothedInputDevice  # pylint: disable=import-error
 class Limit(SmoothedInputDevice):
     """
     Limit switch -- normally open
+
+    The limit switches are used to discover "ends" of the track as well as
+    stop the cart in case something has fallen over/on the track
     """
 
     def __init__(

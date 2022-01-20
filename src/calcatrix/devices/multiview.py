@@ -10,7 +10,10 @@ Device.pin_factory = NativeFactory()
 
 
 class MultiView:
-    """multiview cart"""
+    """Multiview cart
+
+    Combines the linear device and a rotator that travels the track
+    """
 
     def __init__(
         self,

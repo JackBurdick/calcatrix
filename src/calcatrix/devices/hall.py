@@ -3,7 +3,10 @@ from gpiozero import SmoothedInputDevice  # pylint: disable=import-error
 
 class Hall(SmoothedInputDevice):
     """
-    vibration
+    Hall sensor is used to detect magnets.
+
+    The magnets are placed in the track marking fixed locations.
+
     """
 
     def __init__(

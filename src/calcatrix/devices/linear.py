@@ -12,7 +12,10 @@ Device.pin_factory = NativeFactory()
 
 
 class LinearDevice:
-    """treader cart"""
+    """Linear moving cart
+
+    Moves in two directions, has knowledge of fixed locations
+    """
 
     def __init__(
         self,
